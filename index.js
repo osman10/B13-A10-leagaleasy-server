@@ -30,9 +30,9 @@ let database;
 // Connect to MongoDB
 async function run() {
     try {
-        await client.connect();
+        // await client.connect();
 
-        database = client.db("legaleasy"); // database name
+        // database = client.db("legaleasy"); // database name
 
         console.log("Connected to MongoDB successfully!");
     } catch (err) {
@@ -66,7 +66,6 @@ app.get('/lawyers', async (req, res) => {
 
 // Update lawyer by ID
 const { ObjectId } = require("mongodb"); // add this at top
-
 app.put('/lawyers/:id', async (req, res) => {
     const { id } = req.params;
     const updateData = req.body;
