@@ -30,9 +30,9 @@ let database;
 // Connect to MongoDB
 async function run() {
     try {
-        // await client.connect();
+        await client.connect();
 
-        // database = client.db("legaleasy"); // database name
+        database = client.db("legaleasy"); // database name
 
         console.log("Connected to MongoDB successfully!");
     } catch (err) {
