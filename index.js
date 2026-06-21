@@ -45,10 +45,9 @@ app.get("/", (req, res) => {
 app.get("/lawyers", async (req, res) => {
     try {
         const db = await connectDB();
-        const collection = db.collection("lawyer");
-
-        const lawyers = await collection.find().toArray();
-        res.json(lawyers);
+        const collection = db.collection("user");
+        const lawyers = await collection.find({ role: "Lawyer" }).toArray();
+         res.status(200).json(lawyers);
     } catch (error) {
         res.status(500).json({
             message: "Error fetching lawyers",
@@ -57,20 +56,19 @@ app.get("/lawyers", async (req, res) => {
     }
 });
 
+
 // GET single lawyer by ID (optional but useful)
 app.get("/lawyers/:id", async (req, res) => {
     try {
         const db = await connectDB();
-        const collection = db.collection("lawyer");
+        const collection = db.collection("user");
 
         const lawyer = await collection.findOne({
             _id: new ObjectId(req.params.id),
         });
-
         if (!lawyer) {
             return res.status(404).json({ message: "Lawyer not found" });
         }
-
         res.json(lawyer);
     } catch (error) {
         res.status(500).json({
@@ -81,16 +79,15 @@ app.get("/lawyers/:id", async (req, res) => {
 });
 
 // UPDATE lawyer by ID
-app.put("/lawyers/:id", async (req, res) => {
+app.patch("/lawyers/:id", async (req, res) => {
     try {
         const db = await connectDB();
-        const collection = db.collection("lawyer");
+        const collection = db.collection("user");
 
         const result = await collection.updateOne(
             { _id: new ObjectId(req.params.id) },
             { $set: req.body }
         );
-
         if (result.matchedCount === 0) {
             return res.status(404).json({ message: "Lawyer not found" });
         }
@@ -107,11 +104,13 @@ app.put("/lawyers/:id", async (req, res) => {
     }
 });
 
+
+
 // DELETE lawyer by ID (optional)
 app.delete("/lawyers/:id", async (req, res) => {
     try {
         const db = await connectDB();
-        const collection = db.collection("lawyer");
+        const collection = db.collection("user");
 
         const result = await collection.deleteOne({
             _id: new ObjectId(req.params.id),
