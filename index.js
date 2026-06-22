@@ -14,22 +14,22 @@ app.use(express.json());
 const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`));
 
 const verifyToken = async (req, res, next) => {
-  const authHeader = req?.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-  const token = authHeader.split(" ")[1];
-  if (!token) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
+    const authHeader = req?.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
 
-  try {
-    const { payload } = await jwtVerify(token, JWKS);
-    // console.log(payload);
-    next();
-  } catch (error) {
-    return res.status(403).json({ message: "Forbidden" });
-  }
+    try {
+        const { payload } = await jwtVerify(token, JWKS);
+        // console.log(payload);
+        next();
+    } catch (error) {
+        return res.status(403).json({ message: "Forbidden" });
+    }
 };
 
 
@@ -67,6 +67,20 @@ app.get("/", (req, res) => {
 });
 
 
+// GET all admin
+app.get("/admin", verifyToken, async (req, res) => {
+    try {
+        const db = await connectDB();
+        const collection = db.collection("user");
+        const Admin = await collection.find({ role: "Admin" }).toArray();
+        res.status(200).json(Admin);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error fetching Admin",
+            error: error.message,
+        });
+    }
+});
 
 // GET all lawyers
 app.get("/lawyers", async (req, res) => {
@@ -74,7 +88,7 @@ app.get("/lawyers", async (req, res) => {
         const db = await connectDB();
         const collection = db.collection("user");
         const lawyers = await collection.find({ role: "Lawyer" }).toArray();
-         res.status(200).json(lawyers);
+        res.status(200).json(lawyers);
     } catch (error) {
         res.status(500).json({
             message: "Error fetching lawyers",
@@ -83,28 +97,44 @@ app.get("/lawyers", async (req, res) => {
     }
 });
 
+// GET all clients
+app.get("/clients", verifyToken, async (req, res) => {
+    try {
+        const db = await connectDB();
+        const collection = db.collection("user");
+        const Client = await collection.find({ role: "Client" }).toArray();
+        res.status(200).json(Client);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error fetching Client",
+            error: error.message,
+        });
+    }
+});
+
+
 
 // GET single lawyer by ID (optional but useful)
 app.get("/lawyers/:id", verifyToken, async (req, res) => {
-  try {
-    const db = await connectDB();
-    const collection = db.collection("user");
+    try {
+        const db = await connectDB();
+        const collection = db.collection("user");
 
-    const lawyer = await collection.findOne({
-      _id: new ObjectId(req.params.id),
-    });
+        const lawyer = await collection.findOne({
+            _id: new ObjectId(req.params.id),
+        });
 
-    if (!lawyer) {
-      return res.status(404).json({ message: "Lawyer not found" });
+        if (!lawyer) {
+            return res.status(404).json({ message: "Lawyer not found" });
+        }
+
+        res.json(lawyer);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error fetching lawyer",
+            error: error.message,
+        });
     }
-
-    res.json(lawyer);
-  } catch (error) {
-    res.status(500).json({
-      message: "Error fetching lawyer",
-      error: error.message,
-    });
-  }
 });
 
 
@@ -161,34 +191,48 @@ app.delete("/lawyers/:id", async (req, res) => {
 
 // Hiring request
 app.post("/hiring-info", verifyToken, async (req, res) => {
-  try {
-    const db = await connectDB();
-    const hiringCollection = db.collection("hiringInfo");
+    try {
+        const db = await connectDB();
+        const hiringCollection = db.collection("hiringInfo");
 
-    const hiringInfo = req.body;
+        const hiringInfo = req.body;
 
-    const result = await hiringCollection.insertOne({
-      ...hiringInfo,
-      createdAt: new Date(),
-    });
+        const result = await hiringCollection.insertOne({
+            ...hiringInfo,
+            createdAt: new Date(),
+        });
 
-    res.status(201).json({
-      success: true,
-      message: "Consultation booked successfully",
-      insertedId: result.insertedId,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to create hiring request",
-      error: error.message,
-    });
-  }
+        res.status(201).json({
+            success: true,
+            message: "Consultation booked successfully",
+            insertedId: result.insertedId,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to create hiring request",
+            error: error.message,
+        });
+    }
 });
 
 
+// GET all hiring info
+app.get("/hiring-info", verifyToken, async (req, res) => {
+    try {
+        const db = await connectDB();
+        const collection = db.collection("hiringInfo");
 
+        const hiringInfo = await collection.find().toArray();
 
+        res.status(200).json(hiringInfo);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error fetching hiringInfo",
+            error: error.message,
+        });
+    }
+});
 
 
 
