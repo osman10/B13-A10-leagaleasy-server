@@ -25,7 +25,7 @@ const verifyToken = async (req, res, next) => {
 
   try {
     const { payload } = await jwtVerify(token, JWKS);
-    console.log(payload);
+    // console.log(payload);
     next();
   } catch (error) {
     return res.status(403).json({ message: "Forbidden" });
@@ -159,10 +159,45 @@ app.delete("/lawyers/:id", async (req, res) => {
     }
 });
 
+// Hiring request
+app.post("/hiring-info", verifyToken, async (req, res) => {
+  try {
+    const db = await connectDB();
+    const hiringCollection = db.collection("hiringInfo");
 
-// app.listen(process.env.PORT || 5000, () => {
-//     console.log(`🚀 Server is running on port ${process.env.PORT || 5000}`);
-// });
+    const hiringInfo = req.body;
+
+    const result = await hiringCollection.insertOne({
+      ...hiringInfo,
+      createdAt: new Date(),
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Consultation booked successfully",
+      insertedId: result.insertedId,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to create hiring request",
+      error: error.message,
+    });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+app.listen(process.env.PORT || 5000, () => {
+    console.log(`🚀 Server is running on port ${process.env.PORT || 5000}`);
+});
 
 // ===================== EXPORT (IMPORTANT FOR VERCEL) =====================
 module.exports = app;
