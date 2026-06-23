@@ -82,36 +82,63 @@ app.get("/admin", verifyToken, async (req, res) => {
     }
 });
 
+// GET single admin by ID (optional but useful)
+app.get("/admin/:id", verifyToken, async (req, res) => {
+    try {
+        const db = await connectDB();
+        const collection = db.collection("user");
+
+        const admin = await collection.findOne({
+            _id: new ObjectId(req.params.id),
+        });
+
+        if (!admin) {
+            return res.status(404).json({ message: "Admin not found" });
+        }
+
+        res.json(admin);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error fetching lawyer",
+            error: error.message,
+        });
+    }
+});
+
+
 // GET all lawyers
+// app.get("/lawyers", async (req, res) => {
+//     try {
+//         const db = await connectDB();
+//         const collection = db.collection("user");
+//         const lawyers = await collection.find({ role: "Lawyer" }).toArray();
+//         res.status(200).json(lawyers);
+//     } catch (error) {
+//         res.status(500).json({
+//             message: "Error fetching lawyers",
+//             error: error.message,
+//         });
+//     }
+// });
+// GET all lawyers by reverse order
 app.get("/lawyers", async (req, res) => {
-    try {
-        const db = await connectDB();
-        const collection = db.collection("user");
-        const lawyers = await collection.find({ role: "Lawyer" }).toArray();
-        res.status(200).json(lawyers);
-    } catch (error) {
-        res.status(500).json({
-            message: "Error fetching lawyers",
-            error: error.message,
-        });
-    }
-});
+  try {
+    const db = await connectDB();
+    const collection = db.collection("user");
 
-// GET all clients
-app.get("/clients", verifyToken, async (req, res) => {
-    try {
-        const db = await connectDB();
-        const collection = db.collection("user");
-        const Client = await collection.find({ role: "Client" }).toArray();
-        res.status(200).json(Client);
-    } catch (error) {
-        res.status(500).json({
-            message: "Error fetching Client",
-            error: error.message,
-        });
-    }
-});
+    const lawyers = await collection
+      .find({ role: "Lawyer" })
+      .sort({ createdAt: -1 }) // DESCENDING
+      .toArray();
 
+    res.status(200).json(lawyers);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching lawyers",
+      error: error.message,
+    });
+  }
+});
 
 
 // GET single lawyer by ID (optional but useful)
@@ -139,7 +166,7 @@ app.get("/lawyers/:id", verifyToken, async (req, res) => {
 
 
 // UPDATE lawyer by ID
-app.patch("/lawyers/:id", async (req, res) => {
+app.patch("/lawyers/:id",verifyToken, async (req, res) => {
     try {
         const db = await connectDB();
         const collection = db.collection("user");
@@ -167,7 +194,7 @@ app.patch("/lawyers/:id", async (req, res) => {
 
 
 // DELETE lawyer by ID (optional)
-app.delete("/lawyers/:id", async (req, res) => {
+app.delete("/lawyers/:id", verifyToken, async (req, res) => {
     try {
         const db = await connectDB();
         const collection = db.collection("user");
@@ -184,6 +211,44 @@ app.delete("/lawyers/:id", async (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: "Error deleting lawyer",
+            error: error.message,
+        });
+    }
+});
+
+
+// GET all clients
+app.get("/clients", verifyToken, async (req, res) => {
+    try {
+        const db = await connectDB();
+        const collection = db.collection("user");
+        const Client = await collection.find({ role: "Client" }).toArray();
+        res.status(200).json(Client);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error fetching Client",
+            error: error.message,
+        });
+    }
+});
+// GET single client by ID (optional but useful)
+app.get("/clients/:id", verifyToken, async (req, res) => {
+    try {
+        const db = await connectDB();
+        const collection = db.collection("user");
+
+        const client = await collection.findOne({
+            _id: new ObjectId(req.params.id),
+        });
+
+        if (!client) {
+            return res.status(404).json({ message: "client not found" });
+        }
+
+        res.json(client);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error fetching lawyer",
             error: error.message,
         });
     }
