@@ -166,7 +166,7 @@ app.get("/lawyers/:id", verifyToken, async (req, res) => {
 
 
 // UPDATE lawyer by ID
-app.patch("/lawyers/:id",verifyToken, async (req, res) => {
+app.patch("/lawyers/:id", verifyToken, async (req, res) => {
     try {
         const db = await connectDB();
         const collection = db.collection("user");
@@ -300,7 +300,71 @@ app.get("/hiring-info", verifyToken, async (req, res) => {
 });
 
 
+// POST lawyer comment
+app.post("/lawyers/comment", verifyToken, async (req, res) => {
+    try {
+        const db = await connectDB();
+        const collection = db.collection("comments");
 
+        const { lawyerId, userId, comment, userImg } = req.body;
+
+        if (!lawyerId || !comment) {
+            return res.status(400).json({
+                message: "lawyerId and comment are required",
+            });
+        }
+
+        const newComment = {
+            lawyerId, // store as string safely
+            userId: userId || null,
+            comment,
+            userImg,
+            createdAt: new Date(),
+        };
+
+        const result = await collection.insertOne(newComment);
+
+        res.status(201).json({
+            success: true,
+            message: "Comment added successfully",
+            insertedId: result.insertedId,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to add comment",
+            error: error.message,
+        });
+    }
+});
+
+
+// GET comments for a specific lawyer
+app.get("/lawyers/comment/:lawyerId", verifyToken, async (req, res) => {
+    try {
+        const db = await connectDB();
+        const collection = db.collection("comments");
+
+        const { lawyerId } = req.params;
+
+        const comments = await collection
+            .find({ lawyerId })
+            .sort({ createdAt: -1 }) // newest first
+            .toArray();
+
+        res.status(200).json({
+            success: true,
+            count: comments.length,
+            data: comments,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch comments",
+            error: error.message,
+        });
+    }
+});
 
 
 
