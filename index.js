@@ -105,21 +105,6 @@ app.get("/admin/:id", verifyToken, async (req, res) => {
     }
 });
 
-
-// GET all lawyers
-// app.get("/lawyers", async (req, res) => {
-//     try {
-//         const db = await connectDB();
-//         const collection = db.collection("user");
-//         const lawyers = await collection.find({ role: "Lawyer" }).toArray();
-//         res.status(200).json(lawyers);
-//     } catch (error) {
-//         res.status(500).json({
-//             message: "Error fetching lawyers",
-//             error: error.message,
-//         });
-//     }
-// });
 // GET all lawyers by reverse order
 app.get("/lawyers", async (req, res) => {
   try {
@@ -253,6 +238,34 @@ app.get("/clients/:id", verifyToken, async (req, res) => {
         });
     }
 });
+
+
+// UPDATE client by ID
+app.patch("/client/:id", verifyToken, async (req, res) => {
+    try {
+        const db = await connectDB();
+        const collection = db.collection("user");
+
+        const result = await collection.updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: req.body }
+        );
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ message: "Client not found" });
+        }
+
+        res.json({
+            message: "Client updated successfully",
+            result,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Error updating lawyer",
+            error: error.message,
+        });
+    }
+});
+
 
 // Hiring request
 app.post("/hiring-info", verifyToken, async (req, res) => {
@@ -426,6 +439,40 @@ app.get("/hiring-info/:lawyerId", verifyToken, async (req, res) => {
     });
   }
 });
+
+// Get hiring info based on client
+app.get("/client-hiring-info/:clientId", verifyToken, async (req, res) => {
+  try {
+    const db = await connectDB();
+    const collection = db.collection("hiringInfo");
+
+    const { clientId } = req.params;
+    const { status } = req.query;
+
+    const filter = { clientId };
+
+    if (status) {
+      filter.status = status;
+    }
+
+    const result = await collection
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    res.status(200).json({
+      success: true,
+      count: result.length,
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
 // Update heiring status
 app.patch("/hiring-info/update-status/:id", verifyToken, async (req, res) => {
   try {
@@ -457,6 +504,64 @@ app.patch("/hiring-info/update-status/:id", verifyToken, async (req, res) => {
     res.json({
       success: true,
       message: "Status updated successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+// get comments based on lawyerId
+app.get("/lawyers/comment/:lawyerId",verifyToken, async (req, res) => {
+  try {
+    const db = await connectDB();
+    const collection = db.collection("comments");
+
+    const { lawyerId } = req.params;
+
+    const comments = await collection
+      .find({ lawyerId })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    res.status(200).json({
+      success: true,
+      count: comments.length,
+      data: comments,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch comments",
+      error: error.message,
+    });
+  }
+});
+
+// DELETE comment by ID
+app.delete("/lawyers/comment/:id",verifyToken, async (req, res) => {
+  try {
+    const db = await connectDB();
+    const collection = db.collection("comments");
+
+    const { id } = req.params;
+
+    const result = await collection.deleteOne({
+      _id: new ObjectId(id),
+    });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Comment not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Comment deleted successfully",
     });
   } catch (error) {
     res.status(500).json({
