@@ -394,7 +394,77 @@ app.get("/hiring-info/approved", verifyToken, async (req, res) => {
   }
 });
 
+// Get hiring info based on lawyerId
+app.get("/hiring-info/:lawyerId", verifyToken, async (req, res) => {
+  try {
+    const db = await connectDB();
+    const collection = db.collection("hiringInfo");
 
+    const { lawyerId } = req.params;
+    const { status } = req.query;
+
+    const filter = { lawyerId };
+
+    if (status) {
+      filter.status = status;
+    }
+
+    const result = await collection
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    res.status(200).json({
+      success: true,
+      count: result.length,
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+// Update heiring status
+app.patch("/hiring-info/update-status/:id", verifyToken, async (req, res) => {
+  try {
+    const db = await connectDB();
+    const collection = db.collection("hiringInfo");
+
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        message: "Status is required",
+      });
+    }
+
+    const result = await collection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { status } }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Hiring request not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Status updated successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
 
 // app.listen(process.env.PORT || 5000, () => {
 //     console.log(`🚀 Server is running on port ${process.env.PORT || 5000}`);
