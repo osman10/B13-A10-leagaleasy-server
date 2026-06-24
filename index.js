@@ -367,6 +367,34 @@ app.get("/lawyers/comment/:lawyerId", verifyToken, async (req, res) => {
 });
 
 
+// Single Client Math the hiring info
+app.get("/hiring-info/approved", verifyToken, async (req, res) => {
+  try {
+    const db = await connectDB();
+    const collection = db.collection("hiringInfo");
+
+    const { lawyerId, clientId } = req.query;
+
+    const result = await collection.find({
+      lawyerId,
+      clientId,
+      status: "Approved",
+    }).toArray();
+
+    res.json({
+      success: true,
+      count: result.length,
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+
 
 app.listen(process.env.PORT || 5000, () => {
     console.log(`🚀 Server is running on port ${process.env.PORT || 5000}`);
