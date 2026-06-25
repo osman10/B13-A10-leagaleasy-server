@@ -4,11 +4,8 @@
 
 The LegalEase Server provides RESTful APIs for the LegalEase lawyer hiring platform. It manages authentication, role-based authorization, lawyer services, hiring requests, payments, comments, analytics, and transaction management.
 
-## 🌐 Live API
 
-**Server URL:** https://your-server-url.com
 
----
 
 ## 🎯 Features
 
@@ -111,28 +108,7 @@ cd legalease-server
 npm install
 ```
 
----
 
-## 🔐 Environment Variables
-
-Create a `.env` file:
-
-```env
-PORT=5000
-
-DB_USER=your_database_user
-DB_PASS=your_database_password
-
-MONGODB_URI=your_mongodb_connection_string
-
-JWT_SECRET=your_jwt_secret
-
-STRIPE_SECRET_KEY=your_stripe_secret_key
-
-CLIENT_URL=http://localhost:3000
-```
-
----
 
 ## ▶️ Run Server
 
@@ -221,6 +197,6 @@ reviews
 
 ## 👨‍💻 Developer
 
-Backend API for the LegalEase Lawyer Hiring Platform.
+Osman Goni , Developer of Backend API for the LegalEase Lawyer Hiring Platform.
 
 © 2026 LegalEase. All Rights Reserved.
