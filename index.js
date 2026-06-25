@@ -597,9 +597,9 @@ app.delete("/lawyers/comment/:id",verifyToken, async (req, res) => {
   }
 });
 
-app.listen(process.env.PORT || 5000, () => {
-    console.log(`🚀 Server is running on port ${process.env.PORT || 5000}`);
-});
+// app.listen(process.env.PORT || 5000, () => {
+//     console.log(`🚀 Server is running on port ${process.env.PORT || 5000}`);
+// });
 
 // ===================== EXPORT (IMPORTANT FOR VERCEL) =====================
 module.exports = app;
