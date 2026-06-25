@@ -105,6 +105,34 @@ app.get("/admin/:id", verifyToken, async (req, res) => {
     }
 });
 
+
+// UPDATE Admin by ID
+app.patch("/admin/:id", verifyToken, async (req, res) => {
+    try {
+        const db = await connectDB();
+        const collection = db.collection("user");
+
+        const result = await collection.updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: req.body }
+        );
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ message: "Admin not found" });
+        }
+
+        res.json({
+            message: "Admin updated successfully",
+            result,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Error updating lawyer",
+            error: error.message,
+        });
+    }
+});
+
+
 // GET all lawyers by reverse order
 app.get("/lawyers", async (req, res) => {
   try {
@@ -149,7 +177,6 @@ app.get("/lawyers/:id", verifyToken, async (req, res) => {
     }
 });
 
-
 // UPDATE lawyer by ID
 app.patch("/lawyers/:id", verifyToken, async (req, res) => {
     try {
@@ -175,8 +202,6 @@ app.patch("/lawyers/:id", verifyToken, async (req, res) => {
         });
     }
 });
-
-
 
 // DELETE lawyer by ID (optional)
 app.delete("/lawyers/:id", verifyToken, async (req, res) => {
@@ -216,6 +241,7 @@ app.get("/clients", verifyToken, async (req, res) => {
         });
     }
 });
+
 // GET single client by ID (optional but useful)
 app.get("/clients/:id", verifyToken, async (req, res) => {
     try {
@@ -267,7 +293,7 @@ app.patch("/client/:id", verifyToken, async (req, res) => {
 });
 
 
-// Hiring request
+// Create Hiring request
 app.post("/hiring-info", verifyToken, async (req, res) => {
     try {
         const db = await connectDB();
@@ -295,22 +321,6 @@ app.post("/hiring-info", verifyToken, async (req, res) => {
 });
 
 
-// GET all hiring info
-app.get("/hiring-info", verifyToken, async (req, res) => {
-    try {
-        const db = await connectDB();
-        const collection = db.collection("hiringInfo");
-
-        const hiringInfo = await collection.find().toArray();
-
-        res.status(200).json(hiringInfo);
-    } catch (error) {
-        res.status(500).json({
-            message: "Error fetching hiringInfo",
-            error: error.message,
-        });
-    }
-});
 
 
 // POST lawyer comment
@@ -379,8 +389,24 @@ app.get("/lawyers/comment/:lawyerId", verifyToken, async (req, res) => {
     }
 });
 
+// GET all hiring info for admin
+app.get("/hiring-info", verifyToken, async (req, res) => {
+    try {
+        const db = await connectDB();
+        const collection = db.collection("hiringInfo");
 
-// Single Client Math the hiring info
+        const hiringInfo = await collection.find().toArray();
+
+        res.status(200).json(hiringInfo);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error fetching hiringInfo",
+            error: error.message,
+        });
+    }
+});
+
+// Get hiring info based on clientId
 app.get("/hiring-info/approved", verifyToken, async (req, res) => {
   try {
     const db = await connectDB();
@@ -540,7 +566,7 @@ app.get("/lawyers/comment/:lawyerId",verifyToken, async (req, res) => {
   }
 });
 
-// DELETE comment by ID
+// DELETE comment by ID for lawyer user
 app.delete("/lawyers/comment/:id",verifyToken, async (req, res) => {
   try {
     const db = await connectDB();
@@ -571,9 +597,9 @@ app.delete("/lawyers/comment/:id",verifyToken, async (req, res) => {
   }
 });
 
-// app.listen(process.env.PORT || 5000, () => {
-//     console.log(`🚀 Server is running on port ${process.env.PORT || 5000}`);
-// });
+app.listen(process.env.PORT || 5000, () => {
+    console.log(`🚀 Server is running on port ${process.env.PORT || 5000}`);
+});
 
 // ===================== EXPORT (IMPORTANT FOR VERCEL) =====================
 module.exports = app;
