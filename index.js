@@ -292,6 +292,33 @@ app.patch("/client/:id", verifyToken, async (req, res) => {
     }
 });
 
+// DELETE single client by ID
+app.delete("/client/:id", verifyToken, async (req, res) => {
+    try {
+        const db = await connectDB();
+        const collection = db.collection("user");
+
+        const result = await collection.deleteOne({
+            _id: new ObjectId(req.params.id),
+        });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({
+                message: "Client not found",
+            });
+        }
+
+        res.json({
+            message: "Client deleted successfully",
+            result,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Error deleting client",
+            error: error.message,
+        });
+    }
+});
 
 // Create Hiring request
 app.post("/hiring-info", verifyToken, async (req, res) => {
@@ -319,9 +346,6 @@ app.post("/hiring-info", verifyToken, async (req, res) => {
         });
     }
 });
-
-
-
 
 // POST lawyer comment
 app.post("/lawyers/comment", verifyToken, async (req, res) => {
@@ -566,7 +590,7 @@ app.get("/lawyers/comment/:lawyerId",verifyToken, async (req, res) => {
   }
 });
 
-// DELETE comment by ID for lawyer user
+// DELETE comment by ID for lawyer 
 app.delete("/lawyers/comment/:id",verifyToken, async (req, res) => {
   try {
     const db = await connectDB();
